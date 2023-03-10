@@ -5,11 +5,11 @@ const productSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    descritpion: {
+    description: {
         type: String,
         required: true,
     },
-    richDescritpion: {
+    richDescription: {
         type: String,
         default: "",
     },

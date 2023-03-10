@@ -2,6 +2,7 @@ const express = require("express");
 const Category = require("../model/categoryModel")
 const router = express.Router();
 
+//CREATE CATEGORY
 router.post("/create", async (req, res) => {
     try {
         const category = await Category.create(req.body);
@@ -22,7 +23,7 @@ router.post("/create", async (req, res) => {
     }
 })
 
-
+// GET ALL CATEGORY 
 router.get("/getCategories", async (req, res) => {
     try {
         const categories = await Category.find();
@@ -41,6 +42,7 @@ router.get("/getCategories", async (req, res) => {
     }
 })
 
+// DELETE CATEGORY 
 router.delete("/deleteCategories/:id", async (req, res) => {
     try {
         const category = await Category.findOneAndDelete(req?.params?.id);
@@ -69,7 +71,7 @@ router.delete("/deleteCategories/:id", async (req, res) => {
     }
 });
 
-
+//GET SINGLE CATEGORY
 router.get("/getSingleCategories/:id", async (req, res) => {
     try {
 

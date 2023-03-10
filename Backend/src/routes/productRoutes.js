@@ -196,6 +196,7 @@ router.delete("/deleteProduct/:id", async (req, res) => {
     }
 })
 
+
 //GET COUNT/TOTAL PRODUCT
 router.get("/getCount", async (req, res) => {
     const count = await Product.countDocuments();
@@ -203,5 +204,7 @@ router.get("/getCount", async (req, res) => {
         status: "success",
         count
     })
-})
+});
+
+
 module.exports = router;

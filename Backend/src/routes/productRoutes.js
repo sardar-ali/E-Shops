@@ -5,8 +5,15 @@ const router = express.Router();
 
 //GET PRODUCTS
 router.get(`/`, async (req, res) => {
+    console.log("query ::", req.query.category);
+
+    let filter = {};
+
+    if(req?.query?.category){
+        filter = {category:req.query.category?.split(",") } 
+    }
     try {
-        const products = await Product.find().populate("category");
+        const products = await Product.find(filter).populate("category");
         res.status(200).json({
             status: "success",
             success: true,
@@ -206,5 +213,27 @@ router.get("/getCount", async (req, res) => {
     })
 });
 
+
+// GET FEATURED PRODUCTS 
+router.get("/getFeaturedProdcuts/:count", async (req, res) => {
+    const limits = req?.params?.count;
+    const featuredProducts = await Product.find({ isFeatured: true }).limit(limits * 1);
+    if (!featuredProducts) {
+        return res.status(400).json({
+            status: "fail",
+            error: {
+                message: "Featured product not found!"
+            }
+
+        })
+    }
+
+    res.status(200).json({
+        status: "success",
+        data: {
+            featuredProducts
+        }
+    })
+})
 
 module.exports = router;

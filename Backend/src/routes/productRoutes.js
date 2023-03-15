@@ -9,8 +9,8 @@ router.get(`/`, async (req, res) => {
 
     let filter = {};
 
-    if(req?.query?.category){
-        filter = {category:req.query.category?.split(",") } 
+    if (req?.query?.category) {
+        filter = { category: req.query.category?.split(",") }
     }
     try {
         const products = await Product.find(filter).populate("category");
@@ -37,6 +37,7 @@ router.post(`/create`, async (req, res) => {
 
         const category = await Category.findById(req.body.category);
 
+        console.log("category ::", category)
         if (!category) {
             return res.status(400).json({
                 status: "fail",
@@ -172,7 +173,7 @@ router.patch("/updateProduct", async (req, res) => {
 });
 
 
-//UPDATE DELETE
+// DELETE PRODUCT
 router.delete("/deleteProduct/:id", async (req, res) => {
     try {
 

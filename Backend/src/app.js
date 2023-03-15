@@ -2,11 +2,14 @@ const express = require("express");
 const cors = require("cors")
 const morgan = require("morgan")
 require("dotenv").config();
-const { dbConnection } = require("./config/dbConnection")
+const { dbConnection } = require("./config/dbConnection");
+const errorHandler = require("./config/errorHandler");
+
+const authJwt = require("./config/jwt");
 const userRoutes = require("./routes/userRoutes");
 const productRoutes = require("./routes/productRoutes")
 const categoryRoutes = require("./routes/categoryRoutes")
-const orderRoutes = require("./routes/orderRoutes")
+const orderRoutes = require("./routes/orderRoutes");
 
 const app = express();
 
@@ -19,9 +22,10 @@ dbConnection()
 
 // THIS MIDDLEWARE PARSE REQUEST BODY TO JSON
 app.use(express.json());
-
 //MORGAN SHOW LOGGING
 app.use(morgan("tiny"))
+app.use(authJwt());
+app.use(errorHandler)
 
 //API ROUTING SETTINGS
 const api = process.env.API_URL;

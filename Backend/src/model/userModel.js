@@ -47,17 +47,20 @@ const userSchema = new mongoose.Schema({
     }
 )
 
+userSchema.virtual("id").get(function () {
+    return this?._id?.toHexString()
+});
+
 //hashed the password beforing in db
 userSchema.pre("save", async function (next) {
+    console.log(" is password change ::", this.isModified("passwordHash"))
+    // if(this.isModified("passwordHash"))
     this.passwordHash = await bcrypt.hash(this.passwordHash, 12);
     next();
 });
 
-userSchema.method.comparePassword = async function (userPassword, passwordHash) {
-    const isMatched = await bcrypt.compare(userPassword, passwordHash);
-    console.log("isMatched ::", isMatched);
-
-    return isMatched;
+userSchema.methods.comparePassword = async function (userPassword, passwordHash) {
+    return await bcrypt.compare(userPassword, passwordHash);
 }
 
 userSchema.pre(/^find/, async function (next) {
@@ -67,9 +70,6 @@ userSchema.pre(/^find/, async function (next) {
 
 
 
-userSchema.virtual("id").get(function () {
-    return this?._id?.toHexString()
-});
 
 
 

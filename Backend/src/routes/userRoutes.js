@@ -1,7 +1,11 @@
 const express = require("express");
+var jwt = require('jsonwebtoken');
 const User = require("../model/userModel")
 const router = express.Router();
 
+const createToken = (user) => {
+    return jwt.sign({ userId: user?.id, isAdmin: user?.isAdmin }, process.env.JWT_SECRET_KEY, { expiresIn: "1d" })
+}
 
 
 // CREATE USER 
@@ -33,16 +37,12 @@ router.post("/createUser", async (req, res) => {
 })
 
 
-
 //LOGIN USER 
 router.post("/loginUser", async (req, res) => {
     try {
+
         const user = await User.findOne({ email: req.body.email });
-        // if (await user.comparePassword(req.body?.password, user.passwordHash)) {
-        //     console.log("ture")
-        // } else {
-        //     console.log("false")
-        // }
+
         if (!user) {
             return res.status(400).json({
                 status: "fail",
@@ -52,10 +52,25 @@ router.post("/loginUser", async (req, res) => {
             })
         }
 
+        if (!user || ! await user.comparePassword(req.body?.password, user.passwordHash)) {
+            return res.status(400).json({
+                status: "fail",
+                error: {
+                    message: "Invalid credentials Please try again!"
+                }
+            })
+        }
+
+        const token = createToken(user);
+
         res.status(201).json({
             status: "success",
             data: {
-                user
+                user: {
+                    email: user?.email,
+                    token
+                },
+                message: "Login successfully",
             }
         })
     } catch (error) {
@@ -65,6 +80,7 @@ router.post("/loginUser", async (req, res) => {
         })
     }
 })
+
 
 //GET USERS LIST
 router.get("/", async (req, res) => {
@@ -95,6 +111,39 @@ router.get("/", async (req, res) => {
 })
 
 
+
+// DELETE PRODUCT
+router.delete("/deleteUser/:id", async (req, res) => {
+
+    try {
+        const user = await User.findOneAndDelete(req.params.id);
+        
+        if (!user) {
+            return res.status(400).json({
+                status: "fail",
+                error: {
+                    message: "User not found"
+                }
+            })
+        }
+
+        return res.status(200).json({
+            status: "success",
+            data: {
+                user,
+                message: "User deleted successfully"
+            }
+        })
+    } catch (error) {
+        return res.status(500).json({
+            status: "fail",
+            error
+        })
+    }
+})
+
+
+
 //GET SINGLE USER 
 router.get("/getSingleUser/:id", async (req, res) => {
     try {
@@ -122,6 +171,16 @@ router.get("/getSingleUser/:id", async (req, res) => {
         })
     }
 })
+
+//GET COUNT/TOTAL USER
+router.get("/getCount", async (req, res) => {
+    const count = await User.countDocuments();
+    res.status(200).json({
+        status: "success",
+        count
+    })
+});
+
 
 
 module.exports = router;

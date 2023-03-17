@@ -1,11 +1,42 @@
 const express = require("express");
+const multer = require('multer')
 const Product = require("../model/productModel")
 const Category = require("../model/categoryModel")
 const router = express.Router();
 
+const FILE_TYPE_MAP = {
+    "image/png": "png",
+    "image/jpg": "jpg",
+    "image/jpeg": "jpeg",
+}
+
+//create directory where the image store and make the file name unique
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        console.log("file")
+        const isValid = FILE_TYPE_MAP[file.mimetype];
+        const uploadError = new Error("Invalid image type");
+
+        if (isValid) {
+            uploadError = null
+        }
+
+        cb(uploadError, 'public/uploads')
+    },
+    filename: function (req, file, cb) {
+        console.log("file :", file)
+        const fileName = file.originalname.split(" ").join("-")
+        const extension = FILE_TYPE_MAP[file.mimetype];
+        cb(null, `${fileName}-${Date.now()}.${extension}`)
+    }
+})
+
+//set that directory here
+const uploadOptions = multer({ storage })
+
 //GET PRODUCTS
 router.get(`/`, async (req, res) => {
-    console.log("query ::", req.query.category);
+    ;
 
     let filter = {};
 
@@ -32,12 +63,12 @@ router.get(`/`, async (req, res) => {
 
 
 //CREATE PRODUCT
-router.post(`/create`, async (req, res) => {
+router.post(`/create`, uploadOptions.single('image'), async (req, res) => {
     try {
 
         const category = await Category.findById(req.body.category);
 
-        console.log("category ::", category)
+
         if (!category) {
             return res.status(400).json({
                 status: "fail",
@@ -63,8 +94,13 @@ router.post(`/create`, async (req, res) => {
 
         // product = await product.save()
 
+        console.log("body ::", req?.body)
+        const basePath = `${req?.protocol}://${req?.get("host")}/public/uploads`
+        const fileName = req?.file?.filename
+        const image = `${basePath}${fileName}`
+        console.log("image ::", image);
 
-        const product = await Product.create(req?.body);
+        const product = await Product.create({ ...req?.body, image: `${basePath}${fileName}` });
         res.status(201).json({
             status: "success",
             data: {

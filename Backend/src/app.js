@@ -3,9 +3,9 @@ const path = require('path');
 const cors = require("cors")
 const morgan = require("morgan")
 require("dotenv").config();
+
 const { dbConnection } = require("./config/dbConnection");
 const errorHandler = require("./config/errorHandler");
-
 const authJwt = require("./config/jwt");
 const userRoutes = require("./routes/userRoutes");
 const productRoutes = require("./routes/productRoutes")

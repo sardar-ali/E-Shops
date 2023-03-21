@@ -14,7 +14,6 @@ const FILE_TYPE_MAP = {
 //create directory where the image store and make the file name unique
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        console.log("dies ::", file)
         const isValid = FILE_TYPE_MAP[file.mimetype];
         let uploadError = new Error("Invalid image type");
 
@@ -25,8 +24,6 @@ const storage = multer.diskStorage({
         cb(uploadError, 'public/uploads')
     },
     filename: function (req, file, cb) {
-        console.log("filename func ::", file)
-
         const fileName = file.originalname.split(" ").join("-")
         const extension = FILE_TYPE_MAP[file.mimetype];
         cb(null, `${fileName}-${Date.now()}.${extension}`)
@@ -95,13 +92,19 @@ router.post(`/create`, uploadOptions.single('image'), async (req, res) => {
 
         // product = await product.save()
 
+        const file = req?.file;
+        if (!file) {
+            return res.status(400).json({
+                status: "fail",
+                error: { message: "File is required!" }
+            })
+        }
 
         const basePath = `${req?.protocol}://${req?.get("host")}/public/uploads/`
         const fileName = req?.file?.filename
-        const image = `${basePath}${fileName}`
 
         const product = await Product.create({ ...req?.body, image: `${basePath}${fileName}` });
-       
+
         res.status(201).json({
             status: "success",
             data: {
@@ -273,5 +276,58 @@ router.get("/getFeaturedProdcuts/:count", async (req, res) => {
         }
     })
 })
+
+
+//UPDATE PRODUCT IMAGES GELLARYS
+router.put("/gellary-images/:id", uploadOptions.array("images", 10), async (req, res) => {
+    try {
+
+        const files = req?.files;
+        const imagesPath = [];
+        const basePath = `${req?.protocol}://${req?.get("host")}/public/uploads/`
+        if (files) {
+            files?.map((file) => {
+                imagesPath?.push(`${basePath}${file?.filename}`)
+            })
+        } else {
+            return res.status(400).json({
+                status: "fail",
+                error: { message: "images is required!" }
+            })
+        }
+
+        const product = await Product.findOneAndUpdate(
+            req?.body?.id,
+            {
+                images: imagesPath,
+            }, {
+            new: true
+        });
+
+        if (!product) {
+            return res.status(404).json({
+                status: "fail",
+                error: {
+                    message: `product not found`
+                }
+            })
+        }
+
+        res.status(200).json({
+            status: "success",
+            data: {
+                product,
+                message: "Product updated successfully",
+            }
+        })
+
+    } catch (error) {
+        res.status(500).json({
+            status: "fail",
+            error
+        })
+    }
+});
+
 
 module.exports = router;

@@ -46,7 +46,7 @@ const uploadOptions = multer({ storage })
 router.get(`/`, getProducts)
 router.post(`/create`, uploadOptions.single('image'), createProducts)
 router.get("/getSingleProduct/:id", getSingleProduct);
-router.put("/updateProduct", updateProduct);
+router.put("/updateProduct", uploadOptions.single('image'), updateProduct);
 router.delete("/deleteProduct/:id", deleteProduct)
 router.get("/getCount", getTotalOrders);
 router.get("/getFeaturedProdcuts/:count", getFeaturedProducts)

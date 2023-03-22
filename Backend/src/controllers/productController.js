@@ -131,21 +131,35 @@ exports.updateProduct = async (req, res) => {
             })
         }
 
+        const file = req.file;
+        if (!file && !req?.body?.image) {
+            return res.status(400).json({
+                status: "fail",
+                error: { message: "Image is required!" }
+            })
+        }
+
+        const baseUrl = `${req.protocol}://${req?.get("host")}/public/uploads/`
+        const fileName = req?.file?.filename;
+        const image = file ? `${baseUrl}${fileName}` : req?.body?.image;
+       
         const product = await Product.findOneAndUpdate(
             req?.body?.id,
             {
-                name: req?.body?.name,
-                description: req?.body?.description,
-                richDescription: req?.body?.richDescription,
-                image: req?.body?.image,
-                images: req?.body?.images,
-                brand: req?.body?.brand,
-                price: req?.body?.price,
-                category: req?.body?.category,
-                countInStock: req?.body?.countInStock,
-                rating: req?.body?.rating,
-                numReviews: req?.body?.numReviews,
-                isFeatured: req?.body?.isFeatured,
+                ...req?.body,
+                image: image,
+                // name: req?.body?.name,
+                // description: req?.body?.description,
+                // richDescription: req?.body?.richDescription,
+                // image: req?.body?.image,
+                // images: req?.body?.images,
+                // brand: req?.body?.brand,
+                // price: req?.body?.price,
+                // category: req?.body?.category,
+                // countInStock: req?.body?.countInStock,
+                // rating: req?.body?.rating,
+                // numReviews: req?.body?.numReviews,
+                // isFeatured: req?.body?.isFeatured,
             }, {
             new: true
         });
@@ -230,7 +244,7 @@ exports.getFeaturedProducts = async (req, res) => {
 }
 
 //GET COUNT/TOTAL PRODUCT
-exports.getTotalOrders =  async (req, res) => {
+exports.getTotalOrders = async (req, res) => {
     const count = await Product.countDocuments();
     res.status(200).json({
         status: "success",
@@ -239,7 +253,7 @@ exports.getTotalOrders =  async (req, res) => {
 }
 
 //UPDATE PRODUCT IMAGES GELLARYS
-exports.updateImagesGellary =  async (req, res) => {
+exports.updateImagesGellary = async (req, res) => {
     try {
 
         const files = req?.files;
